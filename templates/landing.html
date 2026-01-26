@@ -1,0 +1,122 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ cliente.nombre }} | Reservas</title>
+    <link href="https://fonts.googleapis.com/css2?family={{ cliente.tipografia|default:'Poppins' }}:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{% static 'css/agendamiento.css' %}">
+    <style>
+        :root { --primary: {{ cliente.color_principal }}; }
+        body { 
+            font-family: {{ cliente.tipografia|safe }}; 
+            background-image: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.7)), url('{{ cliente.imagen_fondo.url }}');
+        }
+    </style>
+</head>
+<body class="hero-bg h-screen text-white antialiased overflow-hidden">
+
+    <div class="h-full p-4 md:p-8 flex flex-col">
+        <div class="h-full border border-white/20 rounded-[40px] overflow-hidden flex flex-col relative">
+            
+            <nav class="flex justify-between items-center py-6 px-8 z-10">
+                <div class="flex items-center gap-3">
+                    {% if cliente.logo %}
+                        <img src="{{ cliente.logo.url }}" class="h-10 w-auto object-contain">
+                    {% else %}
+                        <div class="w-2 h-8 bg-[var(--primary)] rounded-full"></div>
+                    {% endif %}
+                    <span class="text-xl font-bold tracking-tight uppercase">{{ cliente.nombre }}</span>
+                </div>
+                <div class="hidden md:flex gap-8 text-sm font-medium text-white/70">
+                    <a href="#configurador" class="bg-white text-black px-6 py-2 rounded-full font-bold hover:bg-[var(--primary)] hover:text-white transition-all">Reservar</a>
+                </div>
+            </nav>
+
+            <div class="flex-1 px-8 md:px-16 relative">
+                
+                <div class="max-w-2xl mt-4 z-10"> 
+                    <h1 class="text-6xl md:text-8xl font-medium leading-[0.9] tracking-tighter">
+                        Experiencias <br> <span class="opacity-80 italic">Inolvidables</span>
+                    </h1>
+                </div>
+
+                <p class="hidden md:block text-lg text-white/60 max-w-sm leading-relaxed absolute bottom-24 left-16 z-10">
+                    Descubre la nueva forma de gestionar tus citas con la tecnología de {{ cliente.nombre }}. Eficiencia con estilo.
+                </p>
+
+                <div id="configurador" class="glass-card p-8 rounded-[32px] w-full md:w-[400px] md:absolute md:bottom-8 md:right-8 z-20">
+                    <h3 class="text-xl font-semibold mb-6 italic text-white/90">Configura tu Cita</h3>
+
+                    <div class="space-y-6 mb-8">
+                        <div class="relative">
+                            <span class="text-xs text-white/40 uppercase font-bold tracking-widest mb-3 block">Servicio</span>
+                            <div id="container-servicio" class="booking-dropdown overflow-hidden">
+                                <button onclick="toggleMenu('servicio')" class="w-full flex items-center justify-between p-4 group">
+                                    <span id="text-servicio" class="font-medium">Sesiones</span>
+                                    <svg id="chevron-servicio" class="w-4 h-4 text-white/40 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path d="M19 9l-7 7-7-7" stroke-width="2" stroke-linecap="round"></path>
+                                    </svg>
+                                </button>
+                                <div id="list-servicio" class="hidden border-t border-white/5 bg-black/40">
+                                    <button onclick="selectOption('servicio', 'Sesiones')" class="btn-option">Sesiones</button>
+                                    <button onclick="selectOption('servicio', 'Reunión de Área')" class="btn-option">Reunión de Área</button>
+                                    <button onclick="selectOption('servicio', 'Diseño')" class="btn-option">Diseño</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div id="container-tipo" class="booking-dropdown h-[72px] flex flex-col justify-center">
+                                <button onclick="toggleMenu('tipo')" class="w-full h-full flex items-center justify-between p-4">
+                                    <span id="text-tipo" class="text-[11px] md:text-xs">Tipo de sesión</span>
+                                    <svg id="chevron-tipo" class="w-4 h-4 text-white/40 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path d="M19 9l-7 7-7-7" stroke-width="2"></path>
+                                    </svg>
+                                </button>
+                                <div id="list-tipo" class="dropdown-list-container hidden"></div>
+                            </div>
+
+                            <div id="container-estado" class="booking-dropdown h-[72px] flex flex-col justify-center opacity-40 pointer-events-none">
+                                <button onclick="toggleMenu('estado')" class="w-full h-full flex items-center justify-between p-4">
+                                    <div class="text-left">
+                                        <span class="text-[9px] text-white/40 block uppercase font-bold">Detalles</span>
+                                        <span id="text-estado" class="text-[10px] md:text-xs font-medium">---</span>
+                                    </div>
+                                    <svg id="chevron-estado" class="w-3 h-3 text-white/40 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path d="M19 9l-7 7-7-7" stroke-width="2"></path>
+                                    </svg>
+                                </button>
+                                <div id="list-estado" class="dropdown-list-container hidden"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <a href="#" id="btn-programar" onclick="enviarAlCalendario(event)" 
+                       class="block w-full bg-white/20 text-white/40 pointer-events-none text-center py-4 rounded-2xl font-bold text-lg transition-all shadow-xl relative z-10 cursor-not-allowed">
+                        Programar!
+                    </a>
+                </div>
+
+                <div class="absolute bottom-8 left-8 md:left-16 flex items-center gap-4 text-sm text-white/40 z-10">
+                    <div class="flex text-[var(--primary)] text-lg">
+                        ★ ★ ★ ★ ★
+                    </div>
+                    <span>+2.500 citas gestionadas</span>
+                </div>
+
+            </div> 
+        </div>
+    </div>
+    <script>
+        window.BusinessConfig = {
+            duracion: {{ cliente.duracion_sesion_base|default:8 }},
+            drone: {{ cliente.ofrece_drone|yesno:"true,false" }},
+            dividir: {{ cliente.permitir_dividir_sesion|yesno:"true,false" }}
+        };
+    </script>
+    <script src="{% static 'js/agendamiento.js' %}"></script>
+</body>
+</html>

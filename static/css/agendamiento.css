@@ -1,0 +1,67 @@
+/* Variables de color dinámicas */
+:root {
+    --primary: #ffffff; 
+}
+
+/* Fondo con degradado para que el texto sea legible */
+.hero-bg {
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    /* El degradado se aplica en el HTML para usar la URL de Django */
+}
+
+/* Tarjeta de Cristal */
+.glass-card {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Selectores Personalizados */
+.booking-dropdown {
+    position: relative;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 1rem;
+    transition: all 0.3s ease;
+}
+
+/* Fix para los menús flotantes */
+.dropdown-list-container {
+    position: absolute;
+    top: 76px;
+    left: 0;
+    width: 100%;
+    background-color: #1a1a1a;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 1rem;
+    z-index: 100;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+}
+
+/* Estilo de los botones dentro de la lista */
+.btn-option {
+    width: 100%;
+    text-align: left;
+    padding: 1rem;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.75rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.2s ease;
+}
+
+.btn-option:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.btn-option:last-child {
+    border-bottom: none;
+}
+
+/* Estrellas y textos inferiores */
+.z-10 { z-index: 10; }
+.z-20 { z-index: 20; }
