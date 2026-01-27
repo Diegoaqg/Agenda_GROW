@@ -23,8 +23,14 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.landing, name='landing'), #landing page o pagina principal
-    path('calendario/', views.calendario, name='calendario'), #El calendario
+
+    path('c/<slug:slug_cliente>/calendario/', views.mostrar_calendario, name='mostrar_calendario'), #El calendario
+
     path('c/<slug:slug_cliente>/', views.landing_personalizada, name='landing_pro'),
+
+    path('c/<slug:slug_cliente>/confirmar/', views.confirmar_reserva, name='confirmar_reserva'),
+
+    path('c/<slug:slug_cliente>/api/eventos/', views.api_eventos_google, name='api_eventos_google'),
 ]
 
 if settings.DEBUG:

@@ -1,28 +1,234 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reservar Cita - AgendApp</title>
+    <title>Calendario de Reservas | {{ cliente.nombre }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --primary: {{ cliente.color_principal|default:'#00ff88' }};
+            --bg-overlay: rgba(10, 10, 10, 0.7); 
+            --text-white: #ffffff;
+            --border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        body {
+            background: linear-gradient(var(--bg-overlay), var(--bg-overlay)), 
+                        url("{{ cliente.imagen_fondo.url }}") no-repeat center center fixed;
+            background-size: cover;
+            color: var(--text-white);
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px 0;
+            margin: 0;
+        }
+
+        .main-wrapper {
+            width: 95%;
+            max-width: 1800px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            z-index: 1;
+        }
+
+        /* CALENDARIO GLASSMORPHISM */
+        #calendar {
+            background: rgba(255, 255, 255, 0.05) !important; 
+            backdrop-filter: blur(15px); 
+            -webkit-backdrop-filter: blur(15px);
+            border-radius: 30px;
+            padding: 25px;
+            border: 1px solid var(--border-color);
+            width: 100%;
+            height: 85vh !important; 
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+        }
+
+        /* EFECTO HOVER EN CASILLAS */
+        .fc-daygrid-day {
+            transition: all 0.3s ease !important;
+        }
+
+        .fc-daygrid-day:hover:not(.fc-day-past) {
+            background: rgba(255, 255, 255, 0.1) !important;
+            cursor: pointer;
+        }
+
+        .fc-daygrid-day:hover .fc-daygrid-day-number {
+            color: var(--primary) !important;
+            transform: scale(1.1);
+            transition: all 0.2s ease;
+        }
+
+        /* ESTILOS DE CELDAS Y TEXTOS */
+        .fc-theme-standard td, .fc-theme-standard th { 
+            border: 1px solid rgba(255,255,255,0.1) !important; 
+        }
+
+        .fc-col-header-cell { background: rgba(0, 0, 0, 0.2); }
+
+        .fc-col-header-cell-cushion { 
+            color: var(--primary) !important; 
+            text-transform: uppercase; 
+            font-size: 0.85rem; 
+            font-weight: 600;
+            text-decoration: none !important; 
+        }
+
+        .fc-daygrid-day-number { 
+            color: rgba(255,255,255,0.9) !important; 
+            text-decoration: none !important; 
+            padding: 12px !important; 
+            font-weight: 500;
+        }
+        
+        /* HOY */
+        .fc-day-today { background: rgba(255, 255, 255, 0.05) !important; }
+        .fc-day-today .fc-daygrid-day-number {
+            background: var(--primary) !important;
+            color: #000 !important;
+            border-radius: 50%;
+            width: 32px; height: 32px;
+            display: flex; align-items: center; justify-content: center;
+            margin: 8px; font-weight: bold;
+        }
+
+        /* EVENTOS OCUPADOS */
+        .fc-daygrid-event {
+            background: rgba(20, 20, 20, 0.8) !important;
+            border: none !important;
+            border-left: 4px solid #ff4444 !important;
+            border-radius: 4px !important;
+            padding: 4px 10px !important;
+        }
+
+        /* BOTONES */
+        .fc-button-primary {
+            background: rgba(255, 255, 255, 0.05) !important;
+            border: 1px solid var(--border-color) !important;
+            text-transform: capitalize !important;
+        }
+        .fc-button-primary:hover { background: var(--primary) !important; color: #000 !important; }
+        .fc-button-active { background: var(--primary) !important; color: #000 !important; }
+
+        .fc-view-harness { flex-grow: 1; }
+    </style>
 </head>
-<body class="bg-gray-100 text-gray-900">
-    <div class="max-w-4xl mx-auto py-12 px-6">
-        <div class="bg-white rounded-2xl shadow-xl p-8">
-            <h2 class="text-3xl font-bold text-blue-600 mb-6">Elige tu horario</h2>
-            <p class="text-gray-600 mb-8">Aquí aparecerá el calendario interactivo muy pronto.</p>
+<body>
+
+    <div class="main-wrapper">
+        <div class="flex justify-between items-center px-6 py-2 bg-black/20 backdrop-blur-md rounded-2xl border border-white/5">
+            <div class="flex items-center gap-4">
+                <img src="{{ cliente.logo.url }}" class="h-10 drop-shadow-lg">
+                <h1 class="text-xl font-light">Agendar con <span class="font-bold">{{ cliente.nombre }}</span></h1>
+            </div>
+            <div class="text-sm text-white/60 font-medium">VISTA MENSUAL</div>
+        </div>
+
+        <div id="calendar"></div>
+    </div>
+
+    <div id="modal-reserva" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+        <div class="bg-[#1a1a1a] border border-white/10 p-8 rounded-[30px] w-full max-w-md shadow-2xl">
+            <h3 class="text-2xl font-bold mb-2 text-white">Confirmar Cita</h3>
+            <p id="fecha-texto" class="text-[var(--primary)] mb-6 font-medium uppercase text-sm tracking-wider"></p>
             
-            <a href="/" class="text-blue-500 hover:underline">← Volver al inicio</a>
+            <form method="POST" action="{% url 'confirmar_reserva' cliente.slug %}" class="space-y-4">
+                {% csrf_token %}
+                <input type="hidden" name="fecha_hora" id="input-fecha">
+                <input type="hidden" name="servicio" value="{{ request.GET.servicio }}">
+                <input type="hidden" name="tipo" value="{{ request.GET.tipo }}">
+                
+                <input type="text" name="nombre_contacto" placeholder="Tu nombre" required 
+                    class="w-full p-4 bg-white/5 border border-white/10 rounded-xl text-white focus:border-[var(--primary)] outline-none transition-all">
+                
+                <input type="email" name="email" placeholder="Tu correo electrónico" required 
+                    class="w-full p-4 bg-white/5 border border-white/10 rounded-xl text-white focus:border-[var(--primary)] outline-none transition-all">
+                
+                <div class="flex gap-4 pt-4">
+                    <button type="button" onclick="cerrarModal()" class="flex-1 py-4 text-white/40 hover:text-white font-bold transition-all">Cancelar</button>
+                    <button type="submit" class="flex-1 bg-white text-black py-4 rounded-xl font-bold hover:bg-[var(--primary)] hover:text-white transition-all">
+                        Agendar Ahora
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 
-    // Script para poner en la página del CALENDARIO
-const urlParams = new URLSearchParams(window.location.search);
-const servicioElegido = urlParams.get('servicio');
-const tipoElegido = urlParams.get('tipo');
-const detalleElegido = urlParams.get('detalle');
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const calendarEl = document.getElementById('calendar');
 
-console.log("El cliente viene con:", servicioElegido, tipoElegido, detalleElegido);
-// Aquí puedes usar estos valores para mostrar u ocultar opciones en el calendario
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                locale: 'es',
+                firstDay: 1,
+                fixedWeekCount: false,
+                
+                // AJUSTE DE TAMAÑO: Esto hace que los cuadros se vean bien al 95% de ancho
+                height: '100%',
+                expandRows: true,
+                
+                headerToolbar: {
+                    left: 'today prev,next',
+                    center: 'title',
+                    right: '' 
+                },
+
+                buttonText: { today: 'Hoy' },
+                events: "{% url 'api_eventos_google' cliente.slug %}",
+                selectable: true,
+
+                dateClick: function(info) {
+                    const selectedDate = new Date(info.dateStr + "T00:00:00");
+                    const hoy = new Date();
+                    hoy.setHours(0,0,0,0);
+
+                    if (selectedDate < hoy) return;
+
+                    document.querySelectorAll('.fc-daygrid-day').forEach(el => el.style.backgroundColor = 'transparent');
+                    info.dayEl.style.backgroundColor = 'rgba(255, 255, 255, 0.15)';
+
+                    abrirFormularioReserva(info.dateStr);
+                }
+            });
+
+            calendar.render();
+        });
+
+        function abrirFormularioReserva(fechaISO) {
+            const modal = document.getElementById('modal-reserva');
+            const inputFecha = document.getElementById('input-fecha');
+            const displayFecha = document.getElementById('fecha-texto');
+
+            inputFecha.value = fechaISO + "T09:00:00";
+
+            const opciones = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            const fechaLegible = new Date(fechaISO + "T00:00:00").toLocaleDateString('es-ES', opciones);
+
+            displayFecha.innerText = fechaLegible;
+            modal.classList.remove('hidden');
+            modal.style.display = 'flex';
+        }
+
+        function cerrarModal() {
+            const modal = document.getElementById('modal-reserva');
+            modal.classList.add('hidden');
+            modal.style.display = 'none';
+        }
+    </script>
 </body>
 </html>

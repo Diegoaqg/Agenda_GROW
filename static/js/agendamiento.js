@@ -131,7 +131,15 @@ function activarDetalle(activar) {
 function enviarAlCalendario(event) {
     event.preventDefault();
     const { servicio, tipo, estado } = menuStates;
-    const urlFinal = `/calendario/?servicio=${encodeURIComponent(servicio.selected)}&tipo=${encodeURIComponent(tipo.selected)}&detalle=${encodeURIComponent(estado.selected)}`;
+    
+    // 1. Obtenemos el slug del cliente desde la URL actual
+    // Si estás en /c/mi-empresa/, esto sacará "mi-empresa"
+    const pathArray = window.location.pathname.split('/');
+    const slug = pathArray[pathArray.indexOf('c') + 1];
+
+    // 2. Construimos la URL profesional que definimos en urls.py
+    const urlFinal = `/c/${slug}/calendario/?servicio=${encodeURIComponent(servicio.selected)}&tipo=${encodeURIComponent(tipo.selected)}&detalle=${encodeURIComponent(estado.selected)}`;
+    
     window.location.href = urlFinal;
 }
 
