@@ -10,121 +10,188 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
 
-        :root {
-            --primary: {{ cliente.color_principal|default:'#00ff88' }};
-            --bg-overlay: rgba(10, 10, 10, 0.7); 
-            --text-white: #ffffff;
-            --border-color: rgba(255, 255, 255, 0.15);
-        }
+    :root {
+        --primary: {{ cliente.color_principal|default:'#00ff88' }};
+        --bg-overlay: rgba(10, 10, 10, 0.7); 
+        --text-white: #ffffff;
+        --border-color: rgba(255, 255, 255, 0.15);
+    }
 
-        body {
-            background: linear-gradient(var(--bg-overlay), var(--bg-overlay)), 
-                        url("{{ cliente.imagen_fondo.url }}") no-repeat center center fixed;
-            background-size: cover;
-            color: var(--text-white);
-            font-family: 'Poppins', sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-            padding: 20px 0;
-            margin: 0;
-        }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
-        .main-wrapper {
-            width: 95%;
-            max-width: 1800px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            z-index: 1;
-        }
+    body {
+        background: linear-gradient(var(--bg-overlay), var(--bg-overlay)), 
+                    url("{{ cliente.imagen_fondo.url }}") no-repeat center center fixed;
+        background-size: cover;
+        color: var(--text-white);
+        font-family: 'Poppins', sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+        padding: 20px 0;
+    }
 
-        /* CALENDARIO GLASSMORPHISM */
-        #calendar {
-            background: rgba(255, 255, 255, 0.05) !important; 
-            backdrop-filter: blur(15px); 
-            -webkit-backdrop-filter: blur(15px);
-            border-radius: 30px;
-            padding: 25px;
-            border: 1px solid var(--border-color);
-            width: 100%;
-            height: 85vh !important; 
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
-        }
+    .main-wrapper {
+        width: 95%;
+        max-width: 1800px;
+        z-index: 1;
+    }
 
-        /* EFECTO HOVER EN CASILLAS */
-        .fc-daygrid-day {
-            transition: all 0.3s ease !important;
-        }
+    #calendar {
+        background: rgba(255, 255, 255, 0.05) !important; 
+        backdrop-filter: blur(15px); 
+        -webkit-backdrop-filter: blur(15px);
+        border-radius: 30px;
+        padding: 25px;
+        border: 1px solid var(--border-color);
+        width: 100%;
+        height: 85vh !important; 
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+    }
+    .fc-daygrid-day-frame {
+        position: relative !important;
+        overflow: hidden;
+    }
+    /* Evitar que el calendario se estreche al usar Flexbox */
+    .fc-daygrid-body, .fc-scrollgrid-sync-table, .fc-col-header {
+        width: 100% !important;
+    }
 
-        .fc-daygrid-day:hover:not(.fc-day-past) {
-            background: rgba(255, 255, 255, 0.1) !important;
-            cursor: pointer;
-        }
+    /* ================================================================
+    2. SEGMENTACIÓN DE CELDAS (REGLAS ESPECÍFICAS)
+    ================================================================ */
 
-        .fc-daygrid-day:hover .fc-daygrid-day-number {
-            color: var(--primary) !important;
-            transform: scale(1.1);
-            transition: all 0.2s ease;
-        }
+    /* --- MES ANTERIOR --- */
+    .cell-prev-month {
+        background: rgba(0, 0, 0, 0.85) !important; /* Celdas oscuras */
+        pointer-events: none !important; /* Anuladas del todo */
+        cursor: default !important;
+    }
+    .cell-prev-month .fc-daygrid-day-number { 
+        display: none !important; 
+    }
 
-        /* ESTILOS DE CELDAS Y TEXTOS */
-        .fc-theme-standard td, .fc-theme-standard th { 
-            border: 1px solid rgba(255,255,255,0.1) !important; 
-        }
+    /* --- FIN DE SEMANAS --- */
+    .cell-weekend {
+        pointer-events: none !important; /* Sin efecto click/hover */
+    }
+    .cell-weekend .fc-daygrid-day-number {
+        color: white !important;
+        opacity: 0.15 !important; /* Número opaco */
+    }
 
-        .fc-col-header-cell { background: rgba(0, 0, 0, 0.2); }
+    /* --- MES SIGUIENTE --- */
+    .cell-next-month {
+        background: rgba(255, 255, 255, 0.02) !important;
+        opacity: 0.4; /* Celdas más apagadas */
+        transition: all 0.3s ease;
+    }
+    .cell-next-month:hover {
+        opacity: 0.8; /* Efecto hover leve */
+        background: rgba(255, 255, 255, 0.08) !important;
+        cursor: pointer;
+    }
 
-        .fc-col-header-cell-cushion { 
-            color: var(--primary) !important; 
-            text-transform: uppercase; 
-            font-size: 0.85rem; 
-            font-weight: 600;
-            text-decoration: none !important; 
-        }
+    /* --- BLOQUEOS (DÍAS CERCANOS Y FILMMAKER NO DISPONIBLE) --- */
+    .cell-restricted {
+        background: rgba(0, 0, 0, 0.5) !important; /* Opacar celda completa */
+        pointer-events: none !important;
+        position: relative;
+    }
 
-        .fc-daygrid-day-number { 
-            color: rgba(255,255,255,0.9) !important; 
-            text-decoration: none !important; 
-            padding: 12px !important; 
-            font-weight: 500;
-        }
-        
-        /* HOY */
-        .fc-day-today { background: rgba(255, 255, 255, 0.05) !important; }
-        .fc-day-today .fc-daygrid-day-number {
-            background: var(--primary) !important;
-            color: #000 !important;
-            border-radius: 50%;
-            width: 32px; height: 32px;
-            display: flex; align-items: center; justify-content: center;
-            margin: 8px; font-weight: bold;
-        }
+    /* Centrado de mensajes sin romper el layout */
+    .lock-message {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 0.65rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.5);
+        background: rgba(0, 0, 0, 0.4);
+        padding: 5px 10px;
+        border-radius: 6px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        white-space: nowrap;
+        z-index: 10;
+    }
 
-        /* EVENTOS OCUPADOS */
-        .fc-daygrid-event {
-            background: rgba(20, 20, 20, 0.8) !important;
-            border: none !important;
-            border-left: 4px solid #ff4444 !important;
-            border-radius: 4px !important;
-            padding: 4px 10px !important;
-        }
+    .lock-message.urgent {
+        color: #ff4444;
+        border-color: rgba(255, 68, 68, 0.3);
+    }
 
-        /* BOTONES */
-        .fc-button-primary {
-            background: rgba(255, 255, 255, 0.05) !important;
-            border: 1px solid var(--border-color) !important;
-            text-transform: capitalize !important;
-        }
-        .fc-button-primary:hover { background: var(--primary) !important; color: #000 !important; }
-        .fc-button-active { background: var(--primary) !important; color: #000 !important; }
+    /* ================================================================
+    3. ESTILOS DE INTERFAZ (HEADERS, BOTONES, NÚMEROS)
+    ================================================================ */
 
-        .fc-view-harness { flex-grow: 1; }
+    /* Hover para celdas normales (Disponibles) */
+    .fc-daygrid-day:not([class*="cell-"]):hover {
+        background: rgba(255, 255, 255, 0.1) !important;
+        cursor: pointer;
+    }
+
+    .fc-daygrid-day:not([class*="cell-"]):hover .fc-daygrid-day-number {
+        color: var(--primary) !important;
+        transform: scale(1.1);
+    }
+
+    /* Hoy */
+    .fc-day-today {
+        background: rgba(255, 255, 255, 0.08) !important;
+    }
+    .fc-day-today .fc-daygrid-day-number {
+        background: var(--primary) !important;
+        color: #000 !important;
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 8px;
+        font-weight: bold;
+    }
+
+    /* Estética de la cuadrícula */
+    .fc-theme-standard td, .fc-theme-standard th { 
+        border: 1px solid rgba(255,255,255,0.08) !important; 
+    }
+
+    .fc-col-header-cell-cushion { 
+        color: var(--primary) !important; 
+        text-transform: uppercase; 
+        font-size: 0.8rem; 
+        font-weight: 600;
+        text-decoration: none !important; 
+    }
+
+    .fc-daygrid-day-number { 
+        position: relative !important;
+        z-index: 2 !important;
+        color: white !important; 
+        text-decoration: none !important; 
+        padding: 12px !important; 
+        transition: all 0.2s ease;
+    }
+
+    /* Botones de navegación */
+    .fc-button-primary {
+        background: rgba(255, 255, 255, 0.05) !important;
+        border: 1px solid var(--border-color) !important;
+        border-radius: 12px !important;
+        padding: 8px 16px !important;
+    }
+    .fc-button-primary:hover { 
+        background: var(--primary) !important; 
+        color: #000 !important; 
+    }
+
+    /* Ocultar elementos innecesarios */
+    .fc-daygrid-event { display: none !important; }
     </style>
 </head>
 <body>
@@ -135,7 +202,7 @@
                 <img src="{{ cliente.logo.url }}" class="h-10 drop-shadow-lg">
                 <h1 class="text-xl font-light">Agendar con <span class="font-bold">{{ cliente.nombre }}</span></h1>
             </div>
-            <div class="text-sm text-white/60 font-medium">VISTA MENSUAL</div>
+            <div class="text-sm text-white/60 font-medium uppercase tracking-widest">Vista Mensual</div>
         </div>
 
         <div id="calendar"></div>
@@ -169,66 +236,133 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const calendarEl = document.getElementById('calendar');
+    document.addEventListener('DOMContentLoaded', function() {
+        const calendarEl = document.getElementById('calendar');
+        const MAX_FILMMAKERS = 2; // Límite de clases por día
 
-            const calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: 'dayGridMonth',
-                locale: 'es',
-                firstDay: 1,
-                fixedWeekCount: false,
+        const calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            locale: 'es',
+            firstDay: 1,
+            fixedWeekCount: false,
+            height: '100%',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: ''
+            },
+            // Vinculación con tus eventos de Google
+            events: "{% url 'api_eventos_google' cliente.slug %}",
+
+            // 1. ASIGNACIÓN DE CLASES Y MENSAJES
+            dayCellDidMount: function(info) {
+                const date = info.date;
+                const now = new Date();
+                now.setHours(0, 0, 0, 0);
                 
-                // AJUSTE DE TAMAÑO: Esto hace que los cuadros se vean bien al 95% de ancho
-                height: '100%',
-                expandRows: true,
-                
-                headerToolbar: {
-                    left: 'today prev,next',
-                    center: 'title',
-                    right: '' 
-                },
+                const currentMonth = calendar.getDate().getMonth();
+                const cellMonth = date.getMonth();
+                const dayOfWeek = date.getDay();
 
-                buttonText: { today: 'Hoy' },
-                events: "{% url 'api_eventos_google' cliente.slug %}",
-                selectable: true,
-
-                dateClick: function(info) {
-                    const selectedDate = new Date(info.dateStr + "T00:00:00");
-                    const hoy = new Date();
-                    hoy.setHours(0,0,0,0);
-
-                    if (selectedDate < hoy) return;
-
-                    document.querySelectorAll('.fc-daygrid-day').forEach(el => el.style.backgroundColor = 'transparent');
-                    info.dayEl.style.backgroundColor = 'rgba(255, 255, 255, 0.15)';
-
-                    abrirFormularioReserva(info.dateStr);
+                // REGLA 1: MES ANTERIOR (O DÍAS PASADOS DEL MES ACTUAL)
+                if (date < now || cellMonth < currentMonth) {
+                    info.el.classList.add('cell-prev-month');
+                    return; // Prioridad máxima: si es pasado, no evaluamos más
                 }
-            });
 
-            calendar.render();
+                // REGLA 2: FIN DE SEMANAS
+                if (dayOfWeek === 0 || dayOfWeek === 6) {
+                    info.el.classList.add('cell-weekend');
+                    return;
+                }
+
+                // REGLA 3: MES SIGUIENTE
+                if (cellMonth > currentMonth) {
+                    info.el.classList.add('cell-next-month');
+                    // Nota: El comportamiento de click se maneja en dateClick
+                    return;
+                }
+
+                // REGLA 4: DÍAS MUY CERCANOS (Margen de 3 días)
+                const margen3Dias = new Date(now);
+                margen3Dias.setDate(now.getDate() + 3);
+
+                if (date >= now && date < margen3Dias) {
+                    info.el.classList.add('cell-restricted');
+                    const msg = document.createElement('div');
+                    msg.className = 'lock-message';
+                    msg.innerText = 'Mín. 3 días';
+                    info.el.appendChild(msg);
+                    
+                    return;
+                }
+
+                // REGLA 5: FILMMAKER NO DISPONIBLE (Límite alcanzado)
+                const eventosHoy = calendar.getEvents().filter(e => 
+                    e.startStr.split('T')[0] === date.toISOString().split('T')[0]
+                );
+
+                if (eventosHoy.length >= MAX_FILMMAKERS) {
+                    info.el.classList.add('cell-restricted');
+                    const msg = document.createElement('div');
+                    msg.className = 'lock-message urgent';
+                    msg.innerText = 'Lleno';
+                    info.el.appendChild(msg);
+                }
+            },
+
+            // 2. GESTIÓN DE CLICKS Y NAVEGACIÓN
+            dateClick: function(info) {
+                const now = new Date();
+                const ultimoDiaMes = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+                
+                // Validación: ¿Estamos en la última semana del mes presente?
+                const esUltimaSemana = (ultimoDiaMes.getDate() - now.getDate()) <= 7;
+
+                // Comportamiento para celdas del MES SIGUIENTE
+                if (info.dayEl.classList.contains('cell-next-month')) {
+                    if (esUltimaSemana) {
+                        calendar.next(); // Pasa al mes siguiente
+                    } else {
+                        // Opcional: Podrías poner un aviso discreto aquí
+                        console.log("Acceso al mes siguiente aún bloqueado");
+                    }
+                    return;
+                }
+
+                // Bloqueo total para el resto de categorías restringidas
+                if (info.dayEl.classList.contains('cell-prev-month') || 
+                    info.dayEl.classList.contains('cell-weekend') || 
+                    info.dayEl.classList.contains('cell-restricted')) {
+                    return;
+                }
+
+                // Si pasa todas las validaciones, procedemos con la reserva
+                abrirFormularioReserva(info.dateStr);
+            }
         });
 
-        function abrirFormularioReserva(fechaISO) {
-            const modal = document.getElementById('modal-reserva');
-            const inputFecha = document.getElementById('input-fecha');
-            const displayFecha = document.getElementById('fecha-texto');
+        calendar.render();
+    });
 
-            inputFecha.value = fechaISO + "T09:00:00";
+    // --- FUNCIONES DE MODAL (ORIGINALES) ---
+    function abrirFormularioReserva(fechaISO) {
+        const modal = document.getElementById('modal-reserva');
+        document.getElementById('input-fecha').value = fechaISO + "T09:00:00";
+        
+        const opciones = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        const fechaLegible = new Date(fechaISO + "T00:00:00").toLocaleDateString('es-ES', opciones);
+        
+        document.getElementById('fecha-texto').innerText = fechaLegible;
+        modal.style.display = 'flex';
+        modal.classList.remove('hidden');
+    }
 
-            const opciones = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-            const fechaLegible = new Date(fechaISO + "T00:00:00").toLocaleDateString('es-ES', opciones);
-
-            displayFecha.innerText = fechaLegible;
-            modal.classList.remove('hidden');
-            modal.style.display = 'flex';
-        }
-
-        function cerrarModal() {
-            const modal = document.getElementById('modal-reserva');
-            modal.classList.add('hidden');
-            modal.style.display = 'none';
-        }
+    function cerrarModal() {
+        const modal = document.getElementById('modal-reserva');
+        modal.style.display = 'none';
+        modal.classList.add('hidden');
+    }
     </script>
 </body>
 </html>
